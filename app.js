@@ -15,7 +15,7 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT) || 8080;
 const app = express();
 
 app.get('/', (request, response) => {
