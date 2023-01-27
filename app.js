@@ -15,7 +15,7 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
 
-const PORT = process.env.PORT || 8080;
+const PORT = parseInt(process.env.PORT) || 8080;
 const app = express();
 
 app.get('/', (request, response) => {
@@ -71,10 +71,12 @@ app.get('/', (request, response) => {
   const stealth = require('puppeteer-extra-plugin-stealth')()
   chromium.use(stealth)
   try {
-  chromium.launch({ headless: true }).then(async browser => {
+  chromium.launch({ headless: false }).then(async browser => {
     const context = await browser.newContext();
-    const page = await context.newPage()
-    await page.goto('https://www.vinted.co.uk/');
+    const page = await context.newPage();
+    await page.goto('https://www.vinted.com/');
+    await page.getByRole('button', { name: '.cls-1{fill:none}.cls-uk-6{fill:#bd0034}.cls-7{fill:#1a237b} United Kingdom' }).click();
+    await page.screenshot({path: 'screenshot-2.png'});
     await page.getByRole('button', { name: 'Accept all' }).click();
     await page.setDefaultNavigationTimeout(0);
     await page.getByTestId('header--login-button').click();
@@ -138,5 +140,9 @@ catch(err) {
 }
 });
   // Send a response to acknowledge that you're done with the request
+
+const func2 = (x, y) => {
+    return x + y;
+};
 
 app.listen(PORT, () => console.log(`App running on port ${PORT}`));
