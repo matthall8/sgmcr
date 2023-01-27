@@ -71,20 +71,19 @@ async function loadSavedCredentialsIfExist() {
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.goto('https://www.depop.com/streetgarms/');
-    // await page.getByTestId('cookieBanner__acceptAllButton').click();
-    // for (let i = 0; i < 24; i++) {
-    //     page.mouse.wheel(0, 15000);
-    //     await sleep(200);
-    // }
-    // await sleep(500);
-    // const links = page.locator('[data-testid="product__item"]');
-    // const linksCount = await links.count();
-    const hrefs = ['https://www.depop.com/products/streetgarms-north-face-puffer-700-large-319f/'];
-    // console.log("Number of links,", linksCount);
-    // for (let i = 0; i < linksCount; i++) {
-    //   let relativeLink = await links.nth(i).getAttribute('href');
-    //   hrefs.push(`https://www.depop.com${relativeLink}`);
-    // }    
+    await page.getByTestId('cookieBanner__acceptAllButton').click();
+    for (let i = 0; i < 24; i++) {
+        page.mouse.wheel(0, 15000);
+        await sleep(200);
+    }
+    await sleep(500);
+    const links = page.locator('[data-testid="product__item"]');
+    const linksCount = await links.count();
+    const hrefs = [];
+    for (let i = 0; i < linksCount; i++) {
+      let relativeLink = await links.nth(i).getAttribute('href');
+      hrefs.push(`https://www.depop.com${relativeLink}`);
+    }    
     for (let i = 0; i < 1; i++) {
       await page.goto(hrefs[i]);
       const html = await page.content();
@@ -114,7 +113,7 @@ async function loadSavedCredentialsIfExist() {
             await sheets.spreadsheets.values.append({
               spreadsheetId: SHEET_ID,
               valueInputOption: 'USER_ENTERED',
-              range: 'Inventory!A1:A1',
+              range: 'Scraped_Inventory!A1:A1',
               requestBody: {
                 values: [
                   [product_name, price, size_formatted,brand,colour,condition, url, description]

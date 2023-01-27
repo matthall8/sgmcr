@@ -119,7 +119,7 @@ app.get('/', (request, response) => {
         await sheets.spreadsheets.values.append({
           spreadsheetId: SHEET_ID,
           valueInputOption: 'USER_ENTERED',
-          range: 'Vinted!A1:A1',
+          range: 'Scraped_Vinted!A1:A1',
           requestBody: {
             values: [
               [product_name, price, brand, size_formatted,condition_formatted, colour]
