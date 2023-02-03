@@ -71,7 +71,7 @@ app.get('/', (request, response) => {
   const stealth = require('puppeteer-extra-plugin-stealth')()
   chromium.use(stealth)
   try {
-  chromium.launch({ headless: false }).then(async browser => {
+  chromium.launch({ headless: true }).then(async browser => {
     const context = await browser.newContext();
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const page = await context.newPage();
@@ -103,7 +103,6 @@ app.get('/', (request, response) => {
 
     for (let i = 0; i < linksCount; i++) {
       await page.goto(hrefs[i]);
-      console.log(hrefs[i]);
       await sleep(1000);
       const html = await page.content();
       const root = parse(html);
@@ -112,7 +111,6 @@ app.get('/', (request, response) => {
       const brand = root.querySelector('[itemprop=brand]').querySelector('[itemprop=name]').text;
       const size = root.querySelectorAll('.details-list__item-value')[1].text;
       const size_formatted = size.replace(/[\r\n]+/g, "").match(/([a-zA-Z1-9]).((?:\S|\s(?!\s))*)/)[0];
-      console.log("Size Formatted:", size_formatted);
       const condition = root.querySelector('[itemprop=itemCondition]').text;
       const condition_formatted = condition.match(/([a-zA-Z]).+?(?=[\n\r\s]{2,})/)[0];
       const colour = root.querySelector('[itemprop=color]').text;
@@ -143,9 +141,5 @@ catch(err) {
 }
 });
   // Send a response to acknowledge that you're done with the request
-
-const func2 = (x, y) => {
-    return x + y;
-};
 
 app.listen(PORT, () => console.log(`App running on port ${PORT}`));
