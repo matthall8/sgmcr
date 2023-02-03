@@ -8,13 +8,13 @@ const stealth = require('puppeteer-extra-plugin-stealth')()
 
 // Add the plugin to playwright (any number of plugins can be added)
 chromium.use(stealth)
+const env = require('dotenv').config();
 
 // That's it, the rest is playwright usage as normal 😊
 chromium.launch({ headless: false }).then(async browser => {
   const page = await browser.newPage()
   console.log('Testing the stealth plugin..')
   await page.goto('https://www.depop.com', { waitUntil: 'networkidle' })
-  await page.screenshot({ path: 'stealth.png', fullPage: true })
   page.once('load', () => console.log('Page loaded!'));
   await page.locator('.sc-gicCDI').click();
   await page.goto('https://www.depop.com/');
@@ -24,11 +24,10 @@ chromium.launch({ headless: false }).then(async browser => {
   await page.getByTestId('cookieBanner__acceptAllButton').click();
   await page.getByTestId('navigation__login').click();
   await page.goto('https://www.depop.com/login/', { waitUntil: 'networkidle' });
-  await page.fill('input#username', 'mad_dog1222');
-  await page.fill('input#password', 'BQvcGEDCPeEv442'),
+  await page.fill('input#username', process.env.DEPOP_USERNAME);
+  await page.fill('input#password', proces.env.DEPOP_PASSWORD);
   await page.click("button[type=submit]", {delay: 2000});
   await page.waitForURL('https://www.depop.com/');
-  await page.screenshot({ path: 'stealth_2.png', fullPage: true })
    // Teardown
   await browser.close();
 })
