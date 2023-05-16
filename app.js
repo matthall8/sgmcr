@@ -6,11 +6,13 @@ const process = require('process');
 const {authenticate} = require('@google-cloud/local-auth');
 const {google} = require('googleapis');
 
+const env = require('dotenv').config();
+
 const { chromium } = require('playwright-extra');
 const { parse } = require('node-html-parser');
 const { response } = require('express');
 
-const SHEET_ID = '1B2LtyVkW98Fn23q0V8IlDrsLclwoXmJDXpI9X57JVVw'
+const SHEET_ID = process.env.SHEETID;
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
@@ -71,13 +73,11 @@ app.get('/', (request, response) => {
   const stealth = require('puppeteer-extra-plugin-stealth')()
   chromium.use(stealth)
   try {
-  chromium.launch({ headless: true }).then(async browser => {
+  chromium.launch({ headless: false }).then(async browser => {
     const context = await browser.newContext();
     const sleep = ms => new Promise(r => setTimeout(r, ms));
     const page = await context.newPage();
-    await page.goto('https://www.vinted.com/');
-    await page.getByRole('button', { name: '.cls-1{fill:none}.cls-uk-6{fill:#bd0034}.cls-7{fill:#1a237b} United Kingdom' }).click();
-    await page.screenshot({path: 'screenshot-2.png'});
+    await page.goto('https://www.vinted.co.uk/');
     await page.getByRole('button', { name: 'Accept all' }).click();
     await page.setDefaultNavigationTimeout(0);
     await page.getByTestId('header--login-button').click();
@@ -85,15 +85,18 @@ app.get('/', (request, response) => {
     await page.getByTestId('auth-select-type--login-email').click();
     await page.getByPlaceholder('Email or username').click();
     await page.getByRole('dialog', { name: 'Log in' }).locator('label').first().click();
-    await page.getByPlaceholder('Email or username').fill('mad_dog12222');
+    await page.getByPlaceholder('Email or username').fill(process.env.VINTED_USERNAME);
     await page.getByPlaceholder('Password').click();
-    await page.getByPlaceholder('Password').fill('BQvcGEDCPeEv442');
+    await page.getByPlaceholder('Password').fill(process.env.VINTED_PASSWORD);
     await sleep(1500);
     await page.getByRole('button', { name: 'Continue' }).click();
     await page.waitForNavigation(); 
     await page.context().storageState({ path: 'storageState.json' });
     await page.goto('https://www.vinted.co.uk/member/items/favourite_list');
     await sleep(5000);
+    const html = await page.content();
+    const root = parse(html);
+    const sellerNames = root.querySelector('h4');
     const links = page.locator('.web_ui__ItemBox__overlay');
     const linksCount = await links.count();
     const hrefs = [];
@@ -110,25 +113,27 @@ app.get('/', (request, response) => {
       const price = root.querySelector('h1').text;
       const brand = root.querySelector('[itemprop=brand]').querySelector('[itemprop=name]').text;
       const size = root.querySelectorAll('.details-list__item-value')[1].text;
+      // let sellerIt = i*6;
+      console.log(sellerNames);
       const size_formatted = size.replace(/[\r\n]+/g, "").match(/([a-zA-Z1-9]).((?:\S|\s(?!\s))*)/)[0];
       const condition = root.querySelector('[itemprop=itemCondition]').text;
       const condition_formatted = condition.match(/([a-zA-Z]).+?(?=[\n\r\s]{2,})/)[0];
       const colour = root.querySelector('[itemprop=color]').text;
-      await page.getByRole('button', { name: 'Remove from favourites' }).click();
-      async function listMajors(auth) {
-        const sheets = google.sheets({ version: 'v4', auth });
-        await sheets.spreadsheets.values.append({
-          spreadsheetId: SHEET_ID,
-          valueInputOption: 'USER_ENTERED',
-          range: 'Scraped_Vinted!A1:A1',
-          requestBody: {
-            values: [
-              [product_name, price, brand, size_formatted,condition_formatted, colour]
-            ]
-          }
-        });
-      }
-      authorize().then(listMajors).catch(console.error)
+      // await page.getByRole('button', { name: 'Remove from favourites' }).click();
+    //   async function listMajors(auth) {
+    //     const sheets = google.sheets({ version: 'v4', auth });
+    //     await sheets.spreadsheets.values.append({
+    //       spreadsheetId: SHEET_ID,
+    //       valueInputOption: 'USER_ENTERED',
+    //       range: 'Scraped_Vinted!A1:A1',
+    //       requestBody: {
+    //         values: [
+    //           [product_name, price, brand, size_formatted,condition_formatted, colour]
+    //         ]
+    //       }
+    //     });
+    //   }
+    //   authorize().then(listMajors).catch(console.error)
     }
 
     await context.close();

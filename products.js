@@ -10,7 +10,9 @@ const { response } = require('express');
 const { Console } = require('console');
 const e = require('express');
 
-const SHEET_ID = '1B2LtyVkW98Fn23q0V8IlDrsLclwoXmJDXpI9X57JVVw'
+const env = require('dotenv').config();
+
+const SHEET_ID = process.env.SHEETID;
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const TOKEN_PATH = path.join(process.cwd(), 'token.json');
 const CREDENTIALS_PATH = path.join(process.cwd(), 'credentials.json');
