@@ -94,6 +94,9 @@ app.get('/', (request, response) => {
     await page.context().storageState({ path: 'storageState.json' });
     await page.goto('https://www.vinted.co.uk/member/items/favourite_list');
     await sleep(5000);
+    const html = await page.content();
+    const root = parse(html);
+    const sellerNames = root.querySelector('h4');
     const links = page.locator('.web_ui__ItemBox__overlay');
     const linksCount = await links.count();
     const hrefs = [];
@@ -110,29 +113,27 @@ app.get('/', (request, response) => {
       const price = root.querySelector('h1').text;
       const brand = root.querySelector('[itemprop=brand]').querySelector('[itemprop=name]').text;
       const size = root.querySelectorAll('.details-list__item-value')[1].text;
-      const seller_name = root.quierySelectorAll('web_ui__Text__text web_ui__Text__body web_ui__Text__left web_ui__Text__amplified web_ui__Text__bold');
-      console.log("Seller:", seller_name);
-      console.log("Seller 1:", seller_name[0]);
-      console.log("Seller 2:", seller_name[1]);
+      // let sellerIt = i*6;
+      console.log(sellerNames);
       const size_formatted = size.replace(/[\r\n]+/g, "").match(/([a-zA-Z1-9]).((?:\S|\s(?!\s))*)/)[0];
       const condition = root.querySelector('[itemprop=itemCondition]').text;
       const condition_formatted = condition.match(/([a-zA-Z]).+?(?=[\n\r\s]{2,})/)[0];
       const colour = root.querySelector('[itemprop=color]').text;
       // await page.getByRole('button', { name: 'Remove from favourites' }).click();
-      async function listMajors(auth) {
-        const sheets = google.sheets({ version: 'v4', auth });
-        await sheets.spreadsheets.values.append({
-          spreadsheetId: SHEET_ID,
-          valueInputOption: 'USER_ENTERED',
-          range: 'Scraped_Vinted!A1:A1',
-          requestBody: {
-            values: [
-              [product_name, price, brand, size_formatted,condition_formatted, colour]
-            ]
-          }
-        });
-      }
-      authorize().then(listMajors).catch(console.error)
+    //   async function listMajors(auth) {
+    //     const sheets = google.sheets({ version: 'v4', auth });
+    //     await sheets.spreadsheets.values.append({
+    //       spreadsheetId: SHEET_ID,
+    //       valueInputOption: 'USER_ENTERED',
+    //       range: 'Scraped_Vinted!A1:A1',
+    //       requestBody: {
+    //         values: [
+    //           [product_name, price, brand, size_formatted,condition_formatted, colour]
+    //         ]
+    //       }
+    //     });
+    //   }
+    //   authorize().then(listMajors).catch(console.error)
     }
 
     await context.close();
